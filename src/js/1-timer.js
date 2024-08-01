@@ -36,6 +36,86 @@ const options = {
     },     
 };
 
-let userSelectedDate;
+let userSelectedDate = new flatpickr('input', options);;
 
-const fp = new flatpickr('input', options);
+class Timer{
+    constructor({onTick}){
+        this.onTick = onTick
+        this.isActive = false;
+        this.intervalID = 0;
+    }
+
+    start(){
+            
+        if(this.isActive)  return;
+            
+        this.isActive = true;
+        button.disabled = true;
+        input.disabled = true;
+        this.intervalID = setInterval(()=>{
+            this.updateTime()
+        },1000)
+
+    }
+    stop(){
+        clearInterval(this.intervalId);
+        this.isActive = false;
+        input.disabled = false; 
+    }
+
+
+    updateTime(){
+        const target = userSelectedDate.getTime();
+        const now = Date.now();
+        if (target <= now) {
+         this.stop();
+            return;
+    }
+        const diff = target - now;
+        const timeObj = this.convertMs(diff);
+        this.onTick(timeObj);
+    }
+   
+    convertMs(ms) {
+        // Number of milliseconds per unit of time
+        const second = 1000;
+        const minute = second * 60;
+        const hour = minute * 60;
+        const day = hour * 24;
+      
+        // Remaining days
+        const days = Math.floor(ms / day);
+        // Remaining hours
+        const hours = Math.floor((ms % day) / hour);
+        // Remaining minutes
+        const minutes = Math.floor(((ms % day) % hour) / minute);
+        // Remaining seconds
+        const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+      
+        return { days, hours, minutes, seconds };
+      }
+      
+}
+
+const startBtn = document.querySelector("button[data-start]")
+
+const timer = new Timer({
+    onTick:updatedNumber,
+})
+
+startBtn.addEventListener("click",timer.start.bind(timer))
+
+function updatedNumber({days,hours,minutes,seconds}){
+    const formatedDays = addZero(days);
+    const formatedHours = addZero(hours);
+    const formatedMinutes = addZero(minutes);
+    const formatedSeconds = addZero(seconds);
+
+    dataDays.textContent = formatedDays;
+    dataHours.textContent = formatedHours;
+    dataMin.textContent = formatedMinutes;
+    dataSec.textContent = formatedSeconds;
+}
+function addZero(num) {
+    return num.toString().padStart(2, '0');
+}
